@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WordPress Monitor Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                        'oswald': ['Oswald', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000000;
+        }
+        .font-oswald {
+            font-family: 'Oswald', sans-serif;
+        }
+        
+        @keyframes fadeInUp {
+            0% { opacity: 0; transform: translateY(20px); filter: blur(5px); }
+            100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+        }
+        
+        .animate-fade-in {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+        
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+        .delay-400 { animation-delay: 400ms; }
+        
+        @keyframes pulse-green {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+        }
+        
+        .pulse-green {
+            animation: pulse-green 2s infinite;
+        }
+        
+        @keyframes pulse-red {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+        }
+        
+        .pulse-red {
+            animation: pulse-red 2s infinite;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(249, 115, 22, 0.3);
+        }
+        
+        .gradient-border {
+            background: linear-gradient(180deg, rgba(251,146,60,0.5) 0%, rgba(251,146,60,0) 100%);
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Custom scrollbar for sidebar */
+        .sidebar-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .sidebar-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .sidebar-scroll::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+        }
+        
+        .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="min-h-screen text-white overflow-x-hidden">
+    <!-- Background Glow Effects -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-orange-500/10 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-green-500/5 rounded-full blur-[100px]"></div>
+    </div>
+
+    <div class="relative flex min-h-screen">
+        <!-- Sidebar - Fixed Full Height -->
+        <aside id="sidebar" class="fixed top-0 left-0 z-50 h-screen w-64 bg-[#0A0A0A] border-r border-white/10 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 flex flex-col">
+            <!-- Logo - Fixed at Top -->
+            <div class="flex-shrink-0 p-6 border-b border-white/10">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg flex items-center justify-center">
+                        <iconify-icon icon="mdi:wordpress" class="text-xl text-white"></iconify-icon>
+                    </div>
+                    <div>
+                        <h1 class="font-oswald font-semibold text-lg uppercase tracking-wide">WP Monitor</h1>
+                        <p class="text-xs text-neutral-400">Security Dashboard</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Navigation - Scrollable -->
+            <nav class="flex-1 overflow-y-auto sidebar-scroll p-4 space-y-1">
+                <a href="#" class="flex items-center gap-3 px-4 py-3 bg-orange-500/20 text-orange-400 rounded-lg border border-orange-500/30">
+                    <iconify-icon icon="mdi:view-dashboard" class="text-xl"></iconify-icon>
+                    <span class="font-medium">Dashboard</span>
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">
+                    <iconify-icon icon="mdi:server" class="text-xl"></iconify-icon>
+                    <span class="font-medium">Servers</span>
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">
+                    <iconify-icon icon="mdi:chart-line" class="text-xl"></iconify-icon>
+                    <span class="font-medium">Analytics</span>
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">
+                    <iconify-icon icon="mdi:shield-check" class="text-xl"></iconify-icon>
+                    <span class="font-medium">Security</span>
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">
+                    <iconify-icon icon="mdi:file-document" class="text-xl"></iconify-icon>
+                    <span class="font-medium">Logs</span>
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">
+                    <iconify-icon icon="mdi:bell" class="text-xl"></iconify-icon>
+                    <span class="font-medium">Alerts</span>
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">
+                    <iconify-icon icon="mdi:cog" class="text-xl"></iconify-icon>
+                    <span class="font-medium">Settings</span>
+                </a>
+                
+                <!-- Extra menu items for scroll demo -->
+                <div class="pt-4 border-t border-white/10 mt-4">
+                    <p class="px-4 text-xs text-neutral-500 uppercase tracking-wide mb-2">Quick Links</p>
+                    <a href="#" class="flex items-center gap-3 px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">
+                        <iconify-icon icon="mdi:help-circle" class="text-xl"></iconify-icon>
+                        <span class="font-medium">Help Center</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">
+                        <iconify-icon icon="mdi:book-open" class="text-xl"></iconify-icon>
+                        <span class="font-medium">Documentation</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">
+                        <iconify-icon icon="mdi:message-text" class="text-xl"></iconify-icon>
+                        <span class="font-medium">Support</span>
+                    </a>
+                </div>
+            </nav>
+            
+            <!-- User Profile - Fixed at Bottom -->
+            <div class="flex-shrink-0 p-4 border-t border-white/10 bg-[#0A0A0A]">
+                <div class="flex items-center gap-3">
+                    <img src="https://picsum.photos/seed/admin-user/100/100.jpg" alt="User" class="w-10 h-10 rounded-full object-cover">
+                    <div class="flex-1 min-w-0">
+                        <p class="font-medium text-sm truncate">Admin User</p>
+                        <p class="text-xs text-neutral-400 truncate">admin@website.com</p>
+                    </div>
+                    <button class="text-neutral-400 hover:text-white transition-colors">
+                        <iconify-icon icon="mdi:logout" class="text-xl"></iconify-icon>
+                    </button>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Sidebar Overlay - Mobile -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden hidden" onclick="toggleSidebar()"></div>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 lg:ml-64 min-h-screen">
+            <!-- Header - Sticky -->
+            <header class="sticky top-0 z-30 bg-black/80 backdrop-blur-xl border-b border-white/10">
+                <div class="flex items-center justify-between px-4 lg:px-8 py-4">
+                    <!-- Mobile Menu Button -->
+                    <button onclick="toggleSidebar()" class="lg:hidden text-white p-2 hover:bg-white/10 rounded-lg transition-colors">
+                        <iconify-icon icon="mdi:menu" class="text-2xl"></iconify-icon>
+                    </button>
+                    
+                    <!-- Page Title -->
+                    <div class="hidden lg:block">
+                        <h2 class="font-oswald text-2xl font-medium uppercase tracking-wide">Dashboard Overview</h2>
+                        <p class="text-sm text-neutral-400">Monitoring 3 WordPress websites</p>
+                    </div>
+                    
+                    <!-- Mobile Title -->
+                    <div class="lg:hidden">
+                        <h2 class="font-oswald text-lg font-medium uppercase tracking-wide">Dashboard</h2>
+                    </div>
+                    
+                    <!-- Search & Actions -->
+                    <div class="flex items-center gap-2 sm:gap-3">
+                        <!-- Search -->
+                        <div class="hidden md:flex items-center bg-white/5 border border-white/10 rounded-lg px-3 py-2">
+                            <iconify-icon icon="mdi:magnify" class="text-neutral-400 mr-2"></iconify-icon>
+                            <input type="text" placeholder="Search..." class="bg-transparent text-sm outline-none w-32 lg:w-40 placeholder-neutral-500">
+                        </div>
+                        
+                        <!-- Notifications -->
+                        <button class="relative p-2 text-neutral-400 hover:text-white hover:bg-white/10 rounded-lg transition-all">
+                            <iconify-icon icon="mdi:bell" class="text-xl"></iconify-icon>
+                            <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                        </button>
+                        
+                        <!-- Add Website -->
+                        <button class="hidden sm:flex items-center gap-2 px-3 sm:px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition-all">
+                            <iconify-icon icon="mdi:plus"></iconify-icon>
+                            <span class="hidden sm:inline">Add Website</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Content - Scrollable -->
+            <div class="p-4 lg:p-8 space-y-6">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 animate-fade-in">
+                    <!-- Uptime Card -->
+                    <div class="glass-card rounded-xl p-4 sm:p-5 transition-all duration-300">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-9 h-9 sm:w-10 sm:h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
+                                <iconify-icon icon="mdi:check-circle" class="text-lg sm:text-xl text-green-400"></iconify-icon>
+                            </div>
+                            <span class="text-xs text-green-400 bg-green-500/20 px-2 py-1 rounded-full">+2.5%</span>
+                        </div>
+                        <p class="text-xl sm:text-2xl lg:text-3xl font-semibold text-white">99.9%</p>
+                        <p class="text-xs sm:text-sm text-neutral-400 mt-1">Uptime Rate</p>
+                    </div>
+                    
+                    <!-- Downtime Card -->
+                    <div class="glass-card rounded-xl p-4 sm:p-5 transition-all duration-300">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-9 h-9 sm:w-10 sm:h-10 bg-red-500/20 rounded-lg flex items-center justify-center">
+                                <iconify-icon icon="mdi:alert-circle" class="text-lg sm:text-xl text-red-400"></iconify-icon>
+                            </div>
+                            <span class="text-xs text-red-400 bg-red-500/20 px-2 py-1 rounded-full">-15min</span>
+                        </div>
+                        <p class="text-xl sm:text-2xl lg:text-3xl font-semibold text-white">45<span class="text-base lg:text-lg text-neutral-400">min</span></p>
+                        <p class="text-xs sm:text-sm text-neutral-400 mt-1">Total Downtime</p>
+                    </div>
+                    
+                    <!-- Attacks Blocked Card -->
+                    <div class="glass-card rounded-xl p-4 sm:p-5 transition-all duration-300">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-9 h-9 sm:w-10 sm:h-10 bg-orange-500/20 rounded-lg flex items-center justify-center">
+                                <iconify-icon icon="mdi:shield-off" class="text-lg sm:text-xl text-orange-400"></iconify-icon>
+                            </div>
+                            <span class="text-xs text-orange-400 bg-orange-500/20 px-2 py-1 rounded-full">+127</span>
+                        </div>
+                        <p class="text-xl sm:text-2xl lg:text-3xl font-semibold text-white">1,284</p>
+                        <p class="text-xs sm:text-sm text-neutral-400 mt-1">Attacks Blocked</p>
+                    </div>
+                    
+                    <!-- Response Time Card -->
+                    <div class="glass-card rounded-xl p-4 sm:p-5 transition-all duration-300">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-9 h-9 sm:w-10 sm:h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                                <iconify-icon icon="mdi:speedometer" class="text-lg sm:text-xl text-blue-400"></iconify-icon>
+                            </div>
+                            <span class="text-xs text-blue-400 bg-blue-500/20 px-2 py-1 rounded-full">-12ms</span>
+                        </div>
+                        <p class="text-xl sm:text-2xl lg:text-3xl font-semibold text-white">245<span class="text-base lg:text-lg text-neutral-400">ms</span></p>
+                        <p class="text-xs sm:text-sm text-neutral-400 mt-1">Avg Response</p>
+                    </div>
+                </div>
+                
+                <!-- Websites Status -->
+                <div class="animate-fade-in delay-100">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-oswald text-lg sm:text-xl font-medium uppercase tracking-wide">Website Status</h3>
+                        <a href="#" class="text-sm text-orange-400 hover:text-orange-300 transition-colors">View All</a>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                        <!-- Website 1 -->
+                        <div class="glass-card rounded-xl overflow-hidden transition-all duration-300">
+                            <div class="gradient-border h-0.5"></div>
+                            <div class="p-4 sm:p-5">
+                                <div class="flex items-start justify-between mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                                            <iconify-icon icon="mdi:wordpress" class="text-xl sm:text-2xl text-blue-400"></iconify-icon>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <h4 class="font-semibold text-white truncate">company-site.com</h4>
+                                            <p class="text-xs text-neutral-400">WordPress 6.4.2</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2 flex-shrink-0">
+                                        <span class="w-2 h-2 bg-green-400 rounded-full pulse-green"></span>
+                                        <span class="text-xs text-green-400 font-medium hidden sm:inline">Online</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
+                                    <div class="bg-white/5 rounded-lg p-2 text-center">
+                                        <p class="text-base sm:text-lg font-semibold text-white">99.9%</p>
+                                        <p class="text-[10px] sm:text-xs text-neutral-400">Uptime</p>
+                                    </div>
+                                    <div class="bg-white/5 rounded-lg p-2 text-center">
+                                        <p class="text-base sm:text-lg font-semibold text-white">186ms</p>
+                                        <p class="text-[10px] sm:text-xs text-neutral-400">Response</p>
+                                    </div>
+                                    <div class="bg-white/5 rounded-lg p-2 text-center">
+                                        <p class="text-base sm:text-lg font-semibold text-white">23</p>
+                                        <p class="text-[10px] sm:text-xs text-neutral-400">Attacks</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center justify-between text-xs text-neutral-400">
+                                    <span class="truncate">Last check: 2 min ago</span>
+                                    <button class="text-orange-400 hover:text-orange-300 flex-shrink-0 ml-2">Details →</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Website 2 -->
+                        <div class="glass-card rounded-xl overflow-hidden transition-all duration-300">
+                            <div class="gradient-border h-0.5"></div>
+                            <div class="p-4 sm:p-5">
+                                <div class="flex items-start justify-between mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                                            <iconify-icon icon="mdi:wordpress" class="text-xl sm:text-2xl text-blue-400"></iconify-icon>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <h4 class="font-semibold text-white truncate">blog.store.id</h4>
+                                            <p class="text-xs text-neutral-400">WordPress 6.4.1</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2 flex-shrink-0">
+                                        <span class="w-2 h-2 bg-green-400 rounded-full pulse-green"></span>
+                                        <span class="text-xs text-green-400 font-medium hidden sm:inline">Online</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
+                                    <div class="bg-white/5 rounded-lg p-2 text-center">
+                                        <p class="text-base sm:text-lg font-semibold text-white">99.7%</p>
+                                        <p class="text-[10px] sm:text-xs text-neutral-400">Uptime</p>
+                                    </div>
+                                    <div class="bg-white/5 rounded-lg p-2 text-center">
+                                        <p class="text-base sm:text-lg font-semibold text-white">312ms</p>
+                                        <p class="text-[10px] sm:text-xs text-neutral-400">Response</p>
+                                    </div>
+                                    <div class="bg-white/5 rounded-lg p-2 text-center">
+                                        <p class="text-base sm:text-lg font-semibold text-white">156</p>
+                                        <p class="text-[10px] sm:text-xs text-neutral-400">Attacks</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center justify-between text-xs text-neutral-400">
+                                    <span class="truncate">Last check: 5 min ago</span>
+                                    <button class="text-orange-400 hover:text-orange-300 flex-shrink-0 ml-2">Details →</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Website 3 - Down -->
+                        <div class="glass-card rounded-xl overflow-hidden transition-all duration-300 md:col-span-2 xl:col-span-1">
+                            <div class="h-0.5 bg-gradient-to-r from-red-500 to-transparent"></div>
+                            <div class="p-4 sm:p-5">
+                                <div class="flex items-start justify-between mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                                            <iconify-icon icon="mdi:wordpress" class="text-xl sm:text-2xl text-blue-400"></iconify-icon>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <h4 class="font-semibold text-white truncate">shop.example.com</h4>
+                                            <p class="text-xs text-neutral-400">WordPress 6.3.3</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2 flex-shrink-0">
+                                        <span class="w-2 h-2 bg-red-400 rounded-full pulse-red"></span>
+                                        <span class="text-xs text-red-400 font-medium hidden sm:inline">Down</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
+                                    <div class="bg-white/5 rounded-lg p-2 text-center">
+                                        <p class="text-base sm:text-lg font-semibold text-white">98.2%</p>
+                                        <p class="text-[10px] sm:text-xs text-neutral-400">Uptime</p>
+                                    </div>
+                                    <div class="bg-white/5 rounded-lg p-2 text-center">
+                                        <p class="text-sm sm:text-base font-semibold text-red-400">Timeout</p>
+                                        <p class="text-[10px] sm:text-xs text-neutral-400">Response</p>
+                                    </div>
+                                    <div class="bg-white/5 rounded-lg p-2 text-center">
+                                        <p class="text-base sm:text-lg font-semibold text-white">1,105</p>
+                                        <p class="text-[10px] sm:text-xs text-neutral-400">Attacks</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center justify-between text-xs text-neutral-400">
+                                    <span class="text-red-400 truncate">⚠ Down since 15 min ago</span>
+                                    <button class="text-orange-400 hover:text-orange-300 flex-shrink-0 ml-2">Details →</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Charts & Logs Section -->
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 animate-fade-in delay-200">
+                    <!-- Uptime Chart -->
+                    <div class="glass-card rounded-xl p-4 sm:p-5 transition-all duration-300">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
+                            <h3 class="font-oswald text-base sm:text-lg font-medium uppercase tracking-wide">Uptime Overview</h3>
+                            <select class="bg-white/5 border border-white/10 rounded-lg px-3 py-1 text-sm text-neutral-300 outline-none">
+                                <option>Last 7 Days</option>
+                                <option>Last 30 Days</option>
+                                <option>Last 90 Days</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Simple Chart Visualization -->
+                        <div class="flex items-end gap-1 sm:gap-2 h-32 sm:h-40 mb-4">
+                            <div class="flex-1 flex flex-col items-center gap-1">
+                                <div class="w-full bg-green-500/80 rounded-t hover:bg-green-500 transition-colors cursor-pointer" style="height: 95%"></div>
+                                <span class="text-[10px] sm:text-xs text-neutral-400">Mon</span>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center gap-1">
+                                <div class="w-full bg-green-500/80 rounded-t hover:bg-green-500 transition-colors cursor-pointer" style="height: 100%"></div>
+                                <span class="text-[10px] sm:text-xs text-neutral-400">Tue</span>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center gap-1">
+                                <div class="w-full bg-green-500/80 rounded-t hover:bg-green-500 transition-colors cursor-pointer" style="height: 98%"></div>
+                                <span class="text-[10px] sm:text-xs text-neutral-400">Wed</span>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center gap-1">
+                                <div class="w-full bg-yellow-500/80 rounded-t hover:bg-yellow-500 transition-colors cursor-pointer" style="height: 85%"></div>
+                                <span class="text-[10px] sm:text-xs text-neutral-400">Thu</span>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center gap-1">
+                                <div class="w-full bg-red-500/80 rounded-t hover:bg-red-500 transition-colors cursor-pointer" style="height: 65%"></div>
+                                <span class="text-[10px] sm:text-xs text-neutral-400">Fri</span>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center gap-1">
+                                <div class="w-full bg-green-500/80 rounded-t hover:bg-green-500 transition-colors cursor-pointer" style="height: 100%"></div>
+                                <span class="text-[10px] sm:text-xs text-neutral-400">Sat</span>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center gap-1">
+                                <div class="w-full bg-green-500/80 rounded-t hover:bg-green-500 transition-colors cursor-pointer" style="height: 97%"></div>
+                                <span class="text-[10px] sm:text-xs text-neutral-400">Sun</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-center gap-4 sm:gap-6 text-xs">
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 bg-green-500 rounded"></span>
+                                <span class="text-neutral-400">Online</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 bg-yellow-500 rounded"></span>
+                                <span class="text-neutral-400">Slow</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 bg-red-500 rounded"></span>
+                                <span class="text-neutral-400">Down</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Attack Logs -->
+                    <div class="glass-card rounded-xl p-4 sm:p-5 transition-all duration-300">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-oswald text-base sm:text-lg font-medium uppercase tracking-wide">Attack Logs</h3>
+                            <a href="#" class="text-sm text-orange-400 hover:text-orange-300 transition-colors">View All</a>
+                        </div>
+                        
+                        <div class="space-y-3 max-h-64 overflow-y-auto scrollbar-thin pr-2">
+                            <!-- Attack Log Item -->
+                            <div class="flex items-start gap-3 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                                <div class="w-8 h-8 bg-red-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <iconify-icon icon="mdi:shield-off" class="text-red-400"></iconify-icon>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                                        <p class="text-sm font-medium text-white">SQL Injection Attempt</p>
+                                        <span class="text-xs text-neutral-400">2 min ago</span>
+                                    </div>
+                                    <p class="text-xs text-neutral-400 mt-1">IP: 192.168.45.123 • blog.store.id</p>
+                                    <p class="text-xs text-red-400 mt-1">Blocked by WAF</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start gap-3 p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+                                <div class="w-8 h-8 bg-orange-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <iconify-icon icon="mdi:key-off" class="text-orange-400"></iconify-icon>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                                        <p class="text-sm font-medium text-white">Brute Force Attack</p>
+                                        <span class="text-xs text-neutral-400">15 min ago</span>
+                                    </div>
+                                    <p class="text-xs text-neutral-400 mt-1">IP: 10.0.0.55 • company-site.com</p>
+                                    <p class="text-xs text-orange-400 mt-1">25 failed login attempts</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start gap-3 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                                <div class="w-8 h-8 bg-yellow-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <iconify-icon icon="mdi:file-alert" class="text-yellow-400"></iconify-icon>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                                        <p class="text-sm font-medium text-white">XSS Attempt</p>
+                                        <span class="text-xs text-neutral-400">1 hour ago</span>
+                                    </div>
+                                    <p class="text-xs text-neutral-400 mt-1">IP: 172.16.0.88 • shop.example.com</p>
+                                    <p class="text-xs text-yellow-400 mt-1">Script injection blocked</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start gap-3 p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+                                <div class="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <iconify-icon icon="mdi:robot" class="text-purple-400"></iconify-icon>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                                        <p class="text-sm font-medium text-white">Bot Detection</p>
+                                        <span class="text-xs text-neutral-400">2 hours ago</span>
+                                    </div>
+                                    <p class="text-xs text-neutral-400 mt-1">IP: 203.194.112.45 • blog.store.id</p>
+                                    <p class="text-xs text-purple-400 mt-1">Suspicious crawler blocked</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Logs Section -->
+                <div class="animate-fade-in delay-300">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
+                        <h3 class="font-oswald text-lg sm:text-xl font-medium uppercase tracking-wide">Recent Activity Logs</h3>
+                        <div class="flex items-center gap-2">
+                            <select class="bg-white/5 border border-white/10 rounded-lg px-2 sm:px-3 py-2 text-sm text-neutral-300 outline-none">
+                                <option>All Websites</option>
+                                <option>company-site.com</option>
+                                <option>blog.store.id</option>
+                                <option>shop.example.com</option>
+                            </select>
+                            <button class="p-2 bg-white/5 border border-white/10 rounded-lg text-neutral-400 hover:text-white hover:bg-white/10 transition-all">
+                                <iconify-icon icon="mdi:download" class="text-lg"></iconify-icon>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card rounded-xl overflow-hidden">
+                        <!-- Desktop Table -->
+                        <div class="hidden md:block overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-white/5">
+                                    <tr class="text-left text-xs text-neutral-400 uppercase tracking-wide">
+                                        <th class="px-6 py-4 font-medium">Timestamp</th>
+                                        <th class="px-6 py-4 font-medium">Website</th>
+                                        <th class="px-6 py-4 font-medium">Event Type</th>
+                                        <th class="px-6 py-4 font-medium">Description</th>
+                                        <th class="px-6 py-4 font-medium">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-white/5">
+                                    <tr class="hover:bg-white/5 transition-colors">
+                                        <td class="px-6 py-4 text-sm text-neutral-300 whitespace-nowrap">2024-01-15 14:32:15</td>
+                                        <td class="px-6 py-4 text-sm text-white">company-site.com</td>
+                                        <td class="px-6 py-4">
+                                            <span class="px-2 py-1 text-xs bg-green-500/20 text-green-400 rounded">Health Check</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-neutral-300">Site responding normally (186ms)</td>
+                                        <td class="px-6 py-4">
+                                            <span class="flex items-center gap-1 text-green-400 text-sm">
+                                                <iconify-icon icon="mdi:check-circle"></iconify-icon> Success
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-white/5 transition-colors">
+                                        <td class="px-6 py-4 text-sm text-neutral-300 whitespace-nowrap">2024-01-15 14:30:00</td>
+                                        <td class="px-6 py-4 text-sm text-white">shop.example.com</td>
+                                        <td class="px-6 py-4">
+                                            <span class="px-2 py-1 text-xs bg-red-500/20 text-red-400 rounded">Downtime</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-neutral-300">Connection timeout detected</td>
+                                        <td class="px-6 py-4">
+                                            <span class="flex items-center gap-1 text-red-400 text-sm">
+                                                <iconify-icon icon="mdi:alert-circle"></iconify-icon> Error
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-white/5 transition-colors">
+                                        <td class="px-6 py-4 text-sm text-neutral-300 whitespace-nowrap">2024-01-15 14:28:45</td>
+                                        <td class="px-6 py-4 text-sm text-white">blog.store.id</td>
+                                        <td class="px-6 py-4">
+                                            <span class="px-2 py-1 text-xs bg-orange-500/20 text-orange-400 rounded">Security</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-neutral-300">Blocked SQL injection attempt</td>
+                                        <td class="px-6 py-4">
+                                            <span class="flex items-center gap-1 text-orange-400 text-sm">
+                                                <iconify-icon icon="mdi:shield"></iconify-icon> Blocked
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-white/5 transition-colors">
+                                        <td class="px-6 py-4 text-sm text-neutral-300 whitespace-nowrap">2024-01-15 14:25:30</td>
+                                        <td class="px-6 py-4 text-sm text-white">company-site.com</td>
+                                        <td class="px-6 py-4">
+                                            <span class="px-2 py-1 text-xs bg-blue-500/20 text-blue-400 rounded">Update</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-neutral-300">Plugin updated: WooCommerce 8.5.0</td>
+                                        <td class="px-6 py-4">
+                                            <span class="flex items-center gap-1 text-green-400 text-sm">
+                                                <iconify-icon icon="mdi:check-circle"></iconify-icon> Success
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-white/5 transition-colors">
+                                        <td class="px-6 py-4 text-sm text-neutral-300 whitespace-nowrap">2024-01-15 14:20:00</td>
+                                        <td class="px-6 py-4 text-sm text-white">blog.store.id</td>
+                                        <td class="px-6 py-4">
+                                            <span class="px-2 py-1 text-xs bg-green-500/20 text-green-400 rounded">Health Check</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-neutral-300">Site responding normally (312ms)</td>
+                                        <td class="px-6 py-4">
+                                            <span class="flex items-center gap-1 text-green-400 text-sm">
+                                                <iconify-icon icon="mdi:check-circle"></iconify-icon> Success
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Mobile Cards -->
+                        <div class="md:hidden divide-y divide-white/5">
+                            <div class="p-4 hover:bg-white/5 transition-colors">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm text-white font-medium">company-site.com</span>
+                                    <span class="px-2 py-1 text-xs bg-green-500/20 text-green-400 rounded">Health Check</span>
+                                </div>
+                                <p class="text-xs text-neutral-400 mb-2">2024-01-15 14:32:15</p>
+                                <p class="text-sm text-neutral-300">Site responding normally (186ms)</p>
+                            </div>
+                            
+                            <div class="p-4 hover:bg-white/5 transition-colors">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm text-white font-medium">shop.example.com</span>
+                                    <span class="px-2 py-1 text-xs bg-red-500/20 text-red-400 rounded">Downtime</span>
+                                </div>
+                                <p class="text-xs text-neutral-400 mb-2">2024-01-15 14:30:00</p>
+                                <p class="text-sm text-neutral-300">Connection timeout detected</p>
+                            </div>
+                            
+                            <div class="p-4 hover:bg-white/5 transition-colors">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm text-white font-medium">blog.store.id</span>
+                                    <span class="px-2 py-1 text-xs bg-orange-500/20 text-orange-400 rounded">Security</span>
+                                </div>
+                                <p class="text-xs text-neutral-400 mb-2">2024-01-15 14:28:45</p>
+                                <p class="text-sm text-neutral-300">Blocked SQL injection attempt</p>
+                            </div>
+                            
+                            <div class="p-4 hover:bg-white/5 transition-colors">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm text-white font-medium">company-site.com</span>
+                                    <span class="px-2 py-1 text-xs bg-blue-500/20 text-blue-400 rounded">Update</span>
+                                </div>
+                                <p class="text-xs text-neutral-400 mb-2">2024-01-15 14:25:30</p>
+                                <p class="text-sm text-neutral-300">Plugin updated: WooCommerce 8.5.0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <div class="flex flex-col sm:flex-row items-center justify-between mt-4 px-2 gap-3">
+                        <p class="text-sm text-neutral-400">Showing 1-5 of 128 entries</p>
+                        <div class="flex items-center gap-1 sm:gap-2">
+                            <button class="px-2 sm:px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-sm text-neutral-400 hover:bg-white/10 transition-all">Prev</button>
+                            <button class="px-3 py-1 bg-orange-500 text-white rounded-lg text-sm font-medium">1</button>
+                            <button class="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-sm text-neutral-400 hover:bg-white/10 transition-all">2</button>
+                            <button class="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-sm text-neutral-400 hover:bg-white/10 transition-all">3</button>
+                            <button class="px-2 sm:px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-sm text-neutral-400 hover:bg-white/10 transition-all">Next</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Footer -->
+                <footer class="text-center py-6 text-xs text-neutral-500 border-t border-white/5 mt-8">
+                    <p>© 2024 WP Monitor Dashboard. All rights reserved.</p>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+            document.body.classList.toggle('overflow-hidden');
+        }
+        
+        // Close sidebar on window resize if desktop
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 1024) {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebar-overlay');
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }
+        });
+
+        // Close sidebar when clicking a link (mobile)
+        document.querySelectorAll('#sidebar nav a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth < 1024) {
+                    toggleSidebar();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
